@@ -33,8 +33,14 @@ export function pdf2picCore(source: string, data: string | Buffer, options = def
     }
   };
 
-  const _bulk = (stream, pages, convertOptions) => {
-    return Promise.all(pages.map((page) => _convert(stream, page, convertOptions)));
+  const _bulk = async (stream, pages, convertOptions) => {
+    const results = [];
+    for await (const page of pages) {
+      const result = await _convert(stream, page, convertOptions);
+      results.push(result);
+    }
+
+    return results;
   };
 
   const convert = (page = 1, convertOptions) => {
