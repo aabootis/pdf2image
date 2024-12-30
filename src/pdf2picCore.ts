@@ -33,14 +33,8 @@ export function pdf2picCore(source: string, data: string | Buffer, options = def
     }
   };
 
-  const _bulk = async (stream, pages, convertOptions) => {
-    const results = [];
-    for await (const page of pages) {
-      const result = await _convert(stream, page, convertOptions);
-      results.push(result);
-    }
-
-    return results;
+  const _bulk = (stream, pages, convertOptions) => {
+    return Promise.all(pages.map((page) => _convert(stream, page, convertOptions)));
   };
 
   const convert = (page = 1, convertOptions) => {
@@ -54,7 +48,7 @@ export function pdf2picCore(source: string, data: string | Buffer, options = def
       pages === -1 ? await getPages(gm, bufferToStream(buffer)) : Array.isArray(pages) ? pages : [pages];
 
     const results = [];
-    const batchSize = 10;
+    const batchSize = 1;
     for (let i = 0; i < pagesToConvert.length; i += batchSize) {
       results.push(...(await _bulk(bufferToStream(buffer), pagesToConvert.slice(i, i + batchSize), convertOptions)));
     }
